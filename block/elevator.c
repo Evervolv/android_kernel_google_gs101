@@ -621,9 +621,11 @@ static inline bool elv_support_iosched(struct request_queue *q)
 	return true;
 }
 
+
 /*
  * For single queue devices, default to using mq-deadline. If we have multiple
  * queues or mq-deadline is not available, default to "none".
+ * If Samsung I/O scheduler is selected, default to "ssg".
  */
 static struct elevator_type *elevator_get_default(struct request_queue *q)
 {
@@ -632,6 +634,9 @@ static struct elevator_type *elevator_get_default(struct request_queue *q)
 
 	if (q->nr_hw_queues != 1)
 		return NULL;
+
+	if (IS_ENABLED(CONFIG_MQ_IOSCHED_SSG))
+		return elevator_get(q, "ssg", false);
 
 	return elevator_get(q, "mq-deadline", false);
 }
